@@ -11,15 +11,19 @@
  */
 
 /**
+ * Include AmazonJS to add API to fetch Amazon Data.
+ */
+require_once dirname( __FILE__ ) . '/amazonjs/amazonjs.php';
+
+/**
  * Register Block JavaScript file.
  */
-function amazon_block_enqueue_block_editor_assets()
-{
-    wp_enqueue_script(
-        'amazon-block',
-        plugins_url('build/index.js', __FILE__),
-        array('wp-blocks', 'wp-element')
-    );
+function amazon_block_enqueue_block_editor_assets() {
+	wp_enqueue_script(
+		'amazon-block',
+		plugins_url( 'build/index.js', __FILE__ ),
+		array( 'wp-blocks', 'wp-element' )
+	);
 }
 
-add_action('enqueue_block_editor_assets', 'amazon_block_enqueue_block_editor_assets');
+add_action( 'enqueue_block_editor_assets', 'amazon_block_enqueue_block_editor_assets' );

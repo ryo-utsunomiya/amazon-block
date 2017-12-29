@@ -1,6 +1,5 @@
-import Sample from './blocks/sample.js';
+import Amazon from './blocks/amazon';
 
 const { registerBlockType } = wp.blocks;
 
-registerBlockType( Sample.name, Sample );
-
+registerBlockType( Amazon.name, Amazon );
