@@ -11,10 +11,10 @@ export default props => {
 	return (
 		<React.Fragment>
 			{ props.data.os &&
-			<AmazonItemsPager params={ props.data.os } />
+			<AmazonItemsPager dispatch={ props.dispatch } params={ props.data.os } />
 			}
 			{ props.data.items &&
-			<AmazonItemsList items={ props.data.items } />
+			<AmazonItemsList dispatch={ props.dispatch } items={ props.data.items } />
 			}
 		</React.Fragment>
 	);
