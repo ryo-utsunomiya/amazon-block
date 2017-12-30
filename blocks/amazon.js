@@ -41,7 +41,6 @@ export default {
 		);
 	},
 	save: ( { attributes } ) => {
-		console.log( attributes.shortcode );
 		return attributes.shortcode;
 	},
 };
