@@ -1,11 +1,12 @@
 /* global React */
-import AmazonSearch from './AmazonSearch';
+import Search from './Search';
+import AffiliateItem from './AffiliateItem';
 
-export default class AmazonBlockEdit extends React.Component {
+export default class AmazonBlock extends React.Component {
 	render() {
-		if ( this.props.shortcode ) {
-			return this.props.shortcode;
+		if ( this.props.item ) {
+			return <AffiliateItem item={ this.props.item } />;
 		}
-		return <AmazonSearch dispatch={ this.props.dispatch } />;
+		return <Search dispatch={ this.props.dispatch } />;
 	}
 }

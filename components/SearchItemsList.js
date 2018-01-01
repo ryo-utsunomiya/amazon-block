@@ -6,20 +6,16 @@ const style = {
 	},
 };
 
-const buildAmazonJsShortCode = ( asin, title ) => {
-	return `[amazonjs asin="${ asin }" locale="JP" title="${ title }"]`;
-};
-
-export default class AmazonItemsList extends React.Component {
+export default class ItemsList extends React.Component {
 	constructor( props ) {
 		super( props );
 		this.handleClick = this.handleClick.bind( this );
 	}
 
 	handleClick( ev ) {
-		const { asin, title } = ev.target.dataset;
-		const sc = buildAmazonJsShortCode( asin, title );
-		this.props.dispatch( 'shortcode', sc );
+		const { index } = ev.target.dataset;
+		const item = this.props.items[ index ];
+		this.props.dispatch( 'SET_ITEM', item );
 	}
 
 	render() {
@@ -49,8 +45,7 @@ export default class AmazonItemsList extends React.Component {
 					<button
 						type="button"
 						onClick={ this.handleClick }
-						data-asin={ row.ASIN }
-						data-title={ row.Title }
+						data-index={ index }
 					>
 						Select
 					</button>
