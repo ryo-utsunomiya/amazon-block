@@ -1,4 +1,6 @@
-/* global React */
+/* global wp, React */
+
+const date = wp.date.date;
 
 const style = {
 	amazonjs_info: {
@@ -47,15 +49,15 @@ export default class AffiliateItem extends React.Component {
 						<li className="amazonjs_price">
 							<b>Price</b>
 							{ item.OfferSummary.LowestNewPrice.FormattedPrice }
-							<span>(at YYYY/MM/DD H:i)</span>
+							<span>(at { date( 'Y/m/d h:i' ) })</span>
 						</li>
 						<li>
 							<b>Release Date</b>
-							{ item.ReleaseDate }
+							{ date( 'Y/m/d', item.ReleaseDate ) }
 						</li>
 						<li>
 							<b>Sales Rank</b>
-							{ item.SalesRank }
+							{ Number( item.SalesRank ).toLocaleString() }
 						</li>
 					</ul>
 				</div>

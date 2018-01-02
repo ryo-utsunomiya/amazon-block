@@ -24,6 +24,16 @@ function amazon_block_enqueue_block_editor_assets() {
 		plugins_url( 'build/index.js', __FILE__ ),
 		array( 'wp-blocks', 'wp-element' )
 	);
+
+	// Temporarily, use amazonjs.css in editor.
+	global $amazonjs;
+	wp_enqueue_style(
+		'amazon-block',
+		$amazonjs->url .
+		'/css/amazonjs.css',
+		array(),
+		Amazonjs::VERSION
+	);
 }
 
 add_action( 'enqueue_block_editor_assets', 'amazon_block_enqueue_block_editor_assets' );
