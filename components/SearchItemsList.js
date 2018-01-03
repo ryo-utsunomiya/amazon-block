@@ -1,9 +1,14 @@
 /* global React */
+import event from '../utils/EventBus';
 
 const style = {
 	listItem: {
 		listStyleType: 'none',
 	},
+};
+
+const buildAmazonJsShortCode = ( asin, title ) => {
+	return `[amazonjs asin="${ asin }" locale="JP" title="${ title }"]`;
 };
 
 export default class ItemsList extends React.Component {
@@ -15,7 +20,8 @@ export default class ItemsList extends React.Component {
 	handleClick( ev ) {
 		const { index } = ev.target.dataset;
 		const item = this.props.items[ index ];
-		this.props.dispatch( 'SET_ITEM', item );
+		const shortcode = buildAmazonJsShortCode( item.ASIN, item.Title );
+		event.emit( 'SET_SHORTCODE', shortcode );
 	}
 
 	render() {

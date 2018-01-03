@@ -40,7 +40,7 @@ export default class AmazonSearch extends React.Component {
 					onChange={ this.handleKeywordChange }
 				/>
 				<input type="submit" value="Search" onClick={ this.handleSearch } />
-				<AmazonItems dispatch={ this.props.dispatch } data={ this.state.data } />
+				<AmazonItems data={ this.state.data } />
 			</React.Fragment>
 		);
 	}

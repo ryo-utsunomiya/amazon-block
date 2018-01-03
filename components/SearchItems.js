@@ -15,7 +15,7 @@ export default class SearchItems extends React.Component {
 				<Pager params={ this.props.data.os } />
 				}
 				{ this.props.data.items &&
-				<List dispatch={ this.props.dispatch } items={ this.props.data.items } />
+				<List items={ this.props.data.items } />
 				}
 			</React.Fragment>
 		);
