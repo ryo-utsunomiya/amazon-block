@@ -1,5 +1,6 @@
 /* global */
 import AmazonBlock from '../components/AmazonBlock';
+import AffiliateItem from '../components/AffiliateItem';
 
 const __ = wp.i18n.__;
 
@@ -9,8 +10,8 @@ export default {
 	icon: 'universal-access-alt',
 	category: 'common',
 	attributes: {
-		shortcode: {
-			type: 'string',
+		item: {
+			type: 'object',
 		},
 	},
 	edit( { attributes, setAttributes } ) {
@@ -21,5 +22,7 @@ export default {
 			/>
 		);
 	},
-	save: () => null,
+	save( { attributes } ) {
+		return <AffiliateItem item={ attributes.item } />;
+	},
 };

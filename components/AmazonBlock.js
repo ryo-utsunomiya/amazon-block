@@ -1,19 +1,19 @@
 /* global React */
 import Search from './Search';
-import Shortcode from './Shortcode';
+import AffiliateItem from './AffiliateItem';
 import event from '../utils/EventBus';
 
 export default class AmazonBlock extends React.Component {
 	componentDidMount() {
-		event.on( 'SET_SHORTCODE', ( shortcode ) => {
-			this.props.setAttributes( { shortcode } );
+		event.on( 'SET_ITEM', ( item ) => {
+			this.props.setAttributes( { item } );
 		} );
 	}
 
 	render() {
-		const { shortcode } = this.props.attributes;
-		if ( shortcode ) {
-			return <Shortcode shortcode={ shortcode } />;
+		const { item } = this.props.attributes;
+		if ( item ) {
+			return <AffiliateItem item={ item } />;
 		}
 		return <Search />;
 	}

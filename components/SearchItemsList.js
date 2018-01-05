@@ -7,10 +7,6 @@ const style = {
 	},
 };
 
-const buildAmazonJsShortCode = ( asin, title ) => {
-	return `[amazonjs asin="${ asin }" locale="JP" title="${ title }"]`;
-};
-
 export default class ItemsList extends React.Component {
 	constructor( props ) {
 		super( props );
@@ -20,8 +16,7 @@ export default class ItemsList extends React.Component {
 	handleClick( ev ) {
 		const { index } = ev.target.dataset;
 		const item = this.props.items[ index ];
-		const shortcode = buildAmazonJsShortCode( item.ASIN, item.Title );
-		event.emit( 'SET_SHORTCODE', shortcode );
+		event.emit( 'SET_ITEM', item );
 	}
 
 	render() {
