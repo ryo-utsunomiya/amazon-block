@@ -1,13 +1,12 @@
-/* global */
 import AmazonBlock from '../components/AmazonBlock';
 import AffiliateItem from '../components/AffiliateItem';
 
-const __ = wp.i18n.__;
+const { __ } = wp.i18n;
 
 export default {
 	name: 'amazon-block/amazon-block',
 	title: __( 'Amazon' ),
-	icon: 'universal-access-alt',
+	icon: 'cart',
 	category: 'common',
 	attributes: {
 		item: {

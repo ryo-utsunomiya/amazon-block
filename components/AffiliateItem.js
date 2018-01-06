@@ -5,14 +5,16 @@ export default class AffiliateItem extends React.Component {
 	render() {
 		const { item } = this.props;
 		return (
-			<a
-				href={ item.DetailPageURL }
-				title={ item.Title }
-				target="_blank"
-				rel="noreferrer noopener"
-			>
-				<AmazonImage image={ this.getImage() } alt={ item.Title } />
-			</a>
+			<div>
+				<a
+					href={ item.DetailPageURL }
+					title={ item.Title }
+					target="_blank"
+					rel="noreferrer noopener"
+				>
+					<AmazonImage image={ this.getImage() } alt={ item.Title } />
+				</a>
+			</div>
 		);
 	}
 

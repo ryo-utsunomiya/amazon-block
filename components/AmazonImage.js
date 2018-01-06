@@ -5,9 +5,9 @@ export default class AmazonImage extends React.Component {
 		const { image, alt } = this.props;
 		return <img
 			src={ image.src }
+			width={ image.width }
+			height={ image.height }
 			alt={ alt }
-			height={ image.width }
-			width={ image.height }
 		/>;
 	}
 }
