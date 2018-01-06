@@ -24,7 +24,7 @@ require_once dirname( __FILE__ ) . '/lib/AmazonJSAdapter.php';
  */
 function make_sure_amazon_block_is_loaded_after_gutenberg( $active_plugins ) {
     // When deactivating plugin, do not modify plugin order.
-    if ( 'deactivate' === $_GET['action'] ) {
+    if ( isset($_GET['action']) && 'deactivate' === $_GET['action'] ) {
         return $active_plugins;
     }
 
