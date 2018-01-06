@@ -28,12 +28,29 @@ class AmazonJSAdapter {
 	}
 
 	private function localize_script() {
-		amazonjs_aws_params($this->amazonjs);
+		amazonjs_aws_params( $this->amazonjs );
 
 		$amazonBlockVars = array(
 			'defaultCountryCode' => $this->amazonjs->default_country_code(),
 			'countries'          => $this->amazonjs->countries,
 			'searchIndexes'      => $this->amazonjs->search_indexes,
+			'noimage'            => [
+				'small'  => [
+					'src'    => plugins_url() . '/amazon-block/lib/amazonjs/images/noimage-small.jpg',
+					'width'  => 60,
+					'height' => 75,
+				],
+				'medium' => [
+					'src'    => plugins_url() . '/amazon-block/lib/amazonjs/images/noimage-medium.jpg',
+					'width'  => 111,
+					'height' => 160,
+				],
+				'large'  => [
+					'src'    => plugins_url() . '/amazon-block/lib/amazonjs/images/noimage-large.jpg',
+					'width'  => 300,
+					'height' => 430,
+				],
+			]
 		);
 
 		wp_localize_script( self::HANDLE, '_amazonBlockVars', $amazonBlockVars );

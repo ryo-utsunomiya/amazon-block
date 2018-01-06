@@ -98,6 +98,7 @@ export default class AmazonSearch extends React.Component {
 					placeholder={ __( 'Input Keyword' ) }
 					value={ this.state.keyword }
 					onChange={ this.handleKeywordChange }
+					style={ { width: '80%' } }
 				/>
 				<input type="submit" value={ __( 'Search' ) } onClick={ this.handleSearch } />
 				<p style={ { color: 'red' } }>{ this.state.data.error_message }</p>

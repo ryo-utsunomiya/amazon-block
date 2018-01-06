@@ -1,5 +1,8 @@
 /* global React */
-import AmazonImage from './AmazonImage';
+import Image from './Image';
+import AmazonBlockVars from '../utils/AmazonBlockVars';
+
+const { noimage } = AmazonBlockVars;
 
 export default class AffiliateItem extends React.Component {
 	render() {
@@ -12,7 +15,7 @@ export default class AffiliateItem extends React.Component {
 					target="_blank"
 					rel="noreferrer noopener"
 				>
-					<AmazonImage image={ this.getImage() } alt={ item.Title } />
+					<Image image={ this.getImage() } alt={ item.Title } />
 				</a>
 			</div>
 		);
@@ -22,12 +25,12 @@ export default class AffiliateItem extends React.Component {
 		const { size, item } = this.props;
 		switch ( size ) {
 			case 'large':
-				return item.LargeImage;
+				return item.LargeImage || noimage.large;
 			case 'small':
-				return item.SmallImage;
+				return item.SmallImage || noimage.small;
 			case 'medium':
 			default:
-				return item.MediumImage;
+				return item.MediumImage || noimage.medium;
 		}
 	}
 }
