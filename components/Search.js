@@ -82,7 +82,7 @@ export default class AmazonSearch extends React.Component {
 
 	render() {
 		return (
-			<React.Fragment>
+			<div>
 				<h2>{ __( 'Keyword Search' ) }</h2>
 				<div>
 					<select name="countryCode" onChange={ this.handleCountryCodeChange }>
@@ -103,7 +103,7 @@ export default class AmazonSearch extends React.Component {
 				<input type="submit" value={ __( 'Search' ) } onClick={ this.handleSearch } />
 				<p style={ { color: 'red' } }>{ this.state.data.error_message }</p>
 				<AmazonItems data={ this.state.data } />
-			</React.Fragment>
+			</div>
 		);
 	}
 }

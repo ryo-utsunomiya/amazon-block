@@ -13,5 +13,4 @@ module.exports = {
 			},
 		],
 	},
-	devtool: process.NODE_ENV === 'production' && 'inline-source-map',
 };

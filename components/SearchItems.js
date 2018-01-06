@@ -5,19 +5,21 @@ import List from './SearchItemsList';
 
 export default class SearchItems extends React.Component {
 	render() {
-		if ( ! this.props.data ) {
+		const { data } = this.props;
+
+		if ( ! data ) {
 			return null;
 		}
 
 		return (
-			<React.Fragment>
-				{ this.props.data.os &&
-				<Pager params={ this.props.data.os } />
+			<div>
+				{ data.os &&
+				<Pager params={ data.os } />
 				}
-				{ this.props.data.items &&
-				<List items={ this.props.data.items } />
+				{ data.items &&
+				<List items={ data.items } />
 				}
-			</React.Fragment>
+			</div>
 		);
 	}
 }

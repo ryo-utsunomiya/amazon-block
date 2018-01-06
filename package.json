@@ -4,8 +4,8 @@
   "description": "A WordPress plugin that provides 'Amazon' block for Gutenberg editor.",
   "main": "index.js",
   "scripts": {
-    "build": "cross-env BABEL_ENV=default NODE_ENV=production webpack",
-    "dev": "cross-env BABEL_ENV=default webpack --watch",
+    "build": "cross-env BABEL_ENV=default NODE_ENV=production webpack --config webpack.prod.js",
+    "dev": "cross-env BABEL_ENV=default webpack --watch --config webpack.dev.js",
     "lint": "eslint .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -23,7 +23,9 @@
     "eslint-plugin-jest": "^21.5.0",
     "eslint-plugin-jsx-a11y": "^6.0.3",
     "eslint-plugin-react": "^7.5.1",
-    "webpack": "^3.10.0"
+    "uglifyjs-webpack-plugin": "^1.1.6",
+    "webpack": "^3.10.0",
+    "webpack-merge": "^4.1.1"
   },
   "dependencies": {},
   "repository": {
