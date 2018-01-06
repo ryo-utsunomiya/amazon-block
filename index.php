@@ -23,6 +23,11 @@ require_once dirname( __FILE__ ) . '/lib/AmazonJSAdapter.php';
  * @return array Active plugins.
  */
 function make_sure_amazon_block_is_loaded_after_gutenberg( $active_plugins ) {
+    // When deactivating plugin, do not modify plugin order.
+    if ( 'deactivate' === $_GET['action'] ) {
+        return $active_plugins;
+    }
+
 	$this_plugin = str_replace( wp_normalize_path( WP_PLUGIN_DIR ) . '/', '', wp_normalize_path( __FILE__ ) );
 	$index       = array_search( $this_plugin, $active_plugins );
 	unset( $active_plugins[ $index ] );
