@@ -1,7 +1,12 @@
 <?php
 
-require_once dirname( __FILE__ ) . '/amazonjs/amazonjs.php';
-require_once dirname( __FILE__ ) . '/amazonjs/amazonjs-aws-params.php';
+if ( ! defined( 'Amazonjs' ) ) {
+    require_once dirname( __FILE__ ) . '/amazonjs/amazonjs.php';
+}
+
+if ( ! defined( 'amazonjs_aws_params' ) ) {
+    require_once dirname( __FILE__ ) . '/amazonjs/amazonjs-aws-params.php';
+}
 
 /**
  * An adapter class which works with AmazonJS plugin.
