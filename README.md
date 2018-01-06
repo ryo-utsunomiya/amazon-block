@@ -9,5 +9,5 @@ This is a wrapper of a popular plugin, [AmazonJS](https://wordpress.org/plugins/
 - PHP 5.6 or higher
   - This plugin may work on PHP 5.2+, but we do not officially support 5.5 or lower.
 
-[Gutenberg](https://wordpress.org/plugins/gutenberg/) is also required to use AmazonBlock.
+[Gutenberg](https://wordpress.org/plugins/gutenberg/) is also required to use 'Amazon' Block.
 If Gutenberg is not installed, this plugin falls back to classic AmazonJS.
