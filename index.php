@@ -15,7 +15,13 @@
  */
 require_once dirname( __FILE__ ) . '/lib/AmazonJSAdapter.php';
 
-// If this plugin is loaded before Gutenberg, this plugin does not work.
+/**
+ * If this plugin is loaded before Gutenberg, this plugin does not work.
+ *
+ * @param array $active_plugins Active plugins.
+ *
+ * @return array Active plugins.
+ */
 function make_sure_amazon_block_is_loaded_after_gutenberg( $active_plugins ) {
 	$this_plugin = str_replace( wp_normalize_path( WP_PLUGIN_DIR ) . '/', '', wp_normalize_path( __FILE__ ) );
 	$index       = array_search( $this_plugin, $active_plugins );
@@ -33,12 +39,12 @@ add_filter( 'pre_update_option_active_plugins', 'make_sure_amazon_block_is_loade
 function amazon_block_enqueue_block_editor_assets() {
 	wp_enqueue_script(
 		'amazon-block',
-		plugins_url( 'build/index.js', __FILE__),
+		plugins_url( 'build/index.js', __FILE__ ),
 		array( 'wp-blocks', 'wp-element' )
 	);
 
 	global $amazonjs;
-	$adapter = new AmazonJSAdapter($amazonjs);
+	$adapter = new AmazonJSAdapter( $amazonjs );
 	$adapter->enqueue_assets();
 }
 
