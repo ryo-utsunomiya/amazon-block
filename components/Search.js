@@ -14,7 +14,6 @@ export default class AmazonSearch extends React.Component {
 			keyword: '',
 			countryCode: defaultCountryCode,
 			searchIndex: defaultSearchIndex,
-			items: [],
 			data: {},
 		};
 		this.handleCountryCodeChange = this.handleCountryCodeChange.bind( this );

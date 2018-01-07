@@ -1,34 +1,33 @@
 /* global React */
-import Image from './Image';
-import Link from './Link';
-import AmazonBlockVars from '../utils/AmazonBlockVars';
-
-const { noimage } = AmazonBlockVars;
+import AffiliateItemTitle from './AffiliateItemTitle';
+import AffiliateItemImage from './AffiliateItemImage';
+import { TEMPLATE_TYPE } from '../utils/constants';
 
 export default class AffiliateItem extends React.Component {
-	getImage() {
-		const { size, item } = this.props;
-		switch ( size ) {
-			case 'large':
-				return item.LargeImage || noimage.large;
-			case 'small':
-				return item.SmallImage || noimage.small;
-			case 'medium':
+	getImageSize( template ) {
+		switch ( template ) {
+			case TEMPLATE_TYPE.IMAGE_SMALL:
+				return 'small';
+			case TEMPLATE_TYPE.IMAGE_LARGE:
+				return 'large';
+			case TEMPLATE_TYPE.IMAGE_MEDIUM:
 			default:
-				return item.MediumImage || noimage.medium;
+				return 'medium';
 		}
 	}
 
 	render() {
-		const { item } = this.props;
+		const { item, template } = this.props;
+
+		if ( template === TEMPLATE_TYPE.TITLE ) {
+			return <AffiliateItemTitle item={ item } />;
+		}
+
 		return (
-			<div>
-				<Link
-					href={ item.DetailPageURL }
-					title={ item.Title }
-					content={ <Image image={ this.getImage() } alt={ item.Title } /> }
-				/>
-			</div>
+			<AffiliateItemImage
+				item={ item }
+				size={ this.getImageSize( template ) }
+			/>
 		);
 	}
 }
