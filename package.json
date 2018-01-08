@@ -1,6 +1,6 @@
 {
   "name": "amazon-block",
-  "version": "1.0.1",
+  "version": "0.2.0",
   "description": "A WordPress plugin that provides 'Amazon' block for Gutenberg editor.",
   "main": "index.js",
   "scripts": {
