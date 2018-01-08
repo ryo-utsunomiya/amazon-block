@@ -1,23 +1,22 @@
 /* global React */
 
+import { EventEmitter } from 'events';
 import Search from './Search';
 import SelectTemplate from './SelectTemplate';
 import AffiliateItem from './AffiliateItem';
-import event from '../utils/EventBus';
 
 export default class AmazonBlock extends React.Component {
+	constructor( props ) {
+		super( props );
+		this.event = new EventEmitter();
+	}
+
 	componentDidMount() {
-		event.on( 'SET_ITEM', ( item, prevItem ) => {
-			if ( ! this.props.attributes.item ) {
-				this.props.setAttributes( { item } );
-			} else if ( prevItem.ASIN === this.props.attributes.item.ASIN ) {
-				this.props.setAttributes( { item } );
-			}
+		this.event.on( 'SET_ITEM', ( item ) => {
+			this.props.setAttributes( { item } );
 		} );
-		event.on( 'SET_TEMPLATE', ( template ) => {
-			if ( ! this.props.attributes.template ) {
-				this.props.setAttributes( { template } );
-			}
+		this.event.on( 'SET_TEMPLATE', ( template ) => {
+			this.props.setAttributes( { template } );
 		} );
 	}
 
@@ -27,10 +26,10 @@ export default class AmazonBlock extends React.Component {
 			return <AffiliateItem item={ item } template={ template } />;
 		} else if ( item ) {
 			return (
-				<SelectTemplate item={ item } />
+				<SelectTemplate item={ item } event={ this.event } />
 			);
 		}
 
-		return <Search />;
+		return <Search event={ this.event } />;
 	}
 }

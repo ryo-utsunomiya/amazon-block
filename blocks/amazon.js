@@ -1,5 +1,4 @@
 import AmazonBlock from '../components/AmazonBlock';
-import AffiliateItem from '../components/AffiliateItemImage';
 
 const { __ } = wp.i18n;
 
@@ -26,9 +25,8 @@ export default {
 	},
 	save( { attributes } ) {
 		return (
-			<AffiliateItem
-				item={ attributes.item }
-				template={ attributes.template }
+			<AmazonBlock
+				attributes={ attributes }
 			/>
 		);
 	},

@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-no-undef,jsx-a11y/no-onchange */
 /* global React, $ */
-import AmazonItems from './SearchItems';
+import SearchItems from './SearchItems';
 import AmazonBlockVars from '../utils/AmazonBlockVars';
 
 const { __ } = wp.i18n;
@@ -80,6 +80,7 @@ export default class AmazonSearch extends React.Component {
 	}
 
 	render() {
+		const { event } = this.props;
 		return (
 			<div>
 				<h2>{ __( 'Keyword Search' ) }</h2>
@@ -101,7 +102,7 @@ export default class AmazonSearch extends React.Component {
 				/>
 				<input type="submit" value={ __( 'Search' ) } onClick={ this.handleSearch } />
 				<p style={ { color: 'red' } }>{ this.state.data.error_message }</p>
-				<AmazonItems data={ this.state.data } />
+				<SearchItems data={ this.state.data } event={ event } />
 			</div>
 		);
 	}

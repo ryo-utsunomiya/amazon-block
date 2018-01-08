@@ -5,7 +5,7 @@ import List from './SearchItemsList';
 
 export default class SearchItems extends React.Component {
 	render() {
-		const { data } = this.props;
+		const { data, event } = this.props;
 
 		if ( ! data ) {
 			return null;
@@ -17,7 +17,7 @@ export default class SearchItems extends React.Component {
 				<Pager params={ data.os } />
 				}
 				{ data.items &&
-				<List items={ data.items } />
+				<List items={ data.items } event={ event } />
 				}
 			</div>
 		);

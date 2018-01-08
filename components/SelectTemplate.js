@@ -1,5 +1,4 @@
 /* global React */
-import event from '../utils/EventBus';
 import AffiliateItem from './AffiliateItem';
 import { TEMPLATE_TYPE } from '../utils/constants';
 
@@ -35,17 +34,19 @@ export default class AmazonBlock extends React.Component {
 	}
 
 	handleCancelClick() {
-		event.emit( 'SET_ITEM', null, this.props.item );
+		const { event } = this.props;
+		event.emit( 'SET_ITEM', null );
 	}
 
 	handleInsertClick() {
+		const { event } = this.props;
 		event.emit( 'SET_TEMPLATE', this.state.template );
 	}
 
 	render() {
 		return (
 			<div>
-				<h4>{__( 'Select template' )}</h4>
+				<h4>{ __( 'Select template' ) }</h4>
 				<div>
 					<label htmlFor="template-type-title" style={ style.label }>
 						<input

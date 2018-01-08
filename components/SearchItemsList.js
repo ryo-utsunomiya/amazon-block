@@ -1,7 +1,6 @@
 /* global React */
 import Image from './Image';
 import Link from './Link';
-import event from '../utils/EventBus';
 import AmazonBlockVars from '../utils/AmazonBlockVars';
 
 const { __ } = wp.i18n;
@@ -33,9 +32,9 @@ export default class SearchItemsList extends React.Component {
 	}
 
 	handleClick( ev ) {
+		const { items, event } = this.props;
 		const { index } = ev.target.dataset;
-		const item = this.props.items[ index ];
-		event.emit( 'SET_ITEM', item );
+		event.emit( 'SET_ITEM', items[ index ] );
 	}
 
 	renderListItems() {
