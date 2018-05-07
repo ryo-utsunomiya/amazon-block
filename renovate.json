@@ -2,5 +2,7 @@
   "extends": [
     "config:base"
   ],
-  "separatePatchReleases": false
+   "minor": {
+    "groupName": "all dependencies",
+  }
 }
