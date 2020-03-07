@@ -1,37 +1,42 @@
 <?php
+
 /*
- Plugin Name: AmazonJS
- Plugin URI: http://wordpress.org/extend/plugins/amazonjs/
- Description: Easy to use interface to add an amazon product to your post and display it by using jQuery template.
- Author: makoto_kw
- Version: 0.8
- Author URI: http://makotokw.com
- Requires at least: 3.3
- Tested up to: 4.5
- License: GPLv2
- Text Domain: amazonjs
- Domain Path: /languages/
+	Plugin Name: AmazonJS
+	Plugin URI: http://wordpress.org/extend/plugins/amazonjs/
+	Description: Easy to use interface to add an amazon product to your post and display it by using jQuery template.
+	Author: makoto_kw
+	Version: 0.10
+	Author URI: https://makotokw.com
+	Requires at least: 3.3
+	Tested up to: 5.2.5
+	License: GPLv2
+	License URI: https://www.gnu.org/licenses/gpl-2.0.html
+	Text Domain: amazonjs
+	Domain Path: /languages
  */
 /*
- AmazonJS depends on
-   jQuery tmpl
-   PEAR Services_JSON: Michal Migurski <mike-json@teczno.com>
+	AmazonJS depends on
+		jQuery tmpl
+		PEAR Services_JSON: Michal Migurski <mike-json@teczno.com>
  */
 
-// TODO: Fixed NoSilencedErrors.Discouraged
-// @codingStandardsIgnoreStart Generic.PHP.NoSilencedErrors.Discouraged
+// @codingStandardsIgnoreStart
 
 require_once dirname( __FILE__ ) . '/lib/json.php';
+require_once dirname( __FILE__ ) . '/lib/Amazon/AwsV4.php';
+require_once dirname( __FILE__ ) . '/lib/Amazon/PaApiClientV5.php';
+require_once dirname( __FILE__ ) . '/amazonjs-item-fixer.php';
 
 class Amazonjs
 {
-	const VERSION        = '0.8';
-	const AWS_VERSION    = '2011-08-01';
+	const VERSION        = '0.10';
+	const AWS_VERSION    = '2013-08-01';
 	const CACHE_LIFETIME = 86400;
 
 	public $title;
 	public $url;
 	public $option_page_url;
+	public $plugin_dir;
 	public $plugin_rel_file;
 	public $option_page_name;
 	public $option_name;
@@ -52,83 +57,93 @@ class Amazonjs
 		$dir                    = dirname( $path );
 		$slug                   = basename( $dir );
 		$this->title            = 'AmazonJS';
+		$this->plugin_dir       = $dir;
 		$this->plugin_rel_file  = basename( $dir ) . DIRECTORY_SEPARATOR . basename( $path );
 		$this->option_page_name = basename( $dir );
 		$this->option_name      = preg_replace( '/[\-\.]/', '_', $this->option_page_name ) . '_settings';
 		$this->url              = plugins_url( '', $path );
 		$this->option_page_url  = admin_url() . 'options-general.php?page=' . $this->option_page_name;
 		$this->text_domain      = $slug;
+
+		if ( get_locale() == 'ja' ) {
+			add_filter( 'load_textdomain_mofile', array( $this, 'load_textdomain_mofile' ), 10, 2 );
+		}
 		load_plugin_textdomain( $this->text_domain, false, dirname( $this->plugin_rel_file ) . '/languages' );
 
 		$this->countries = array(
 			'US' => array(
 				'label'              => __( 'United States', $this->text_domain ),
 				'domain'             => 'Amazon.com',
-				'baseUri'            => 'http://webservices.amazon.com',
-				'linkTemplate'       => '<iframe src="http://rcm.amazon.com/e/cm?t=${t}&o=1&p=8&l=as1&asins=${asins}&fc1=${fc1}&IS2=${IS2}&lt1=${lt1}&m=amazon&lc1=${lc1}&bc1=${bc1}&bg1=${bg1}&f=ifr" style="width:120px;height:240px;" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>',
+				'baseUri'            => 'https://webservices.amazon.com',
+				'linkTemplate'       => '<iframe src="https://rcm.amazon.com/e/cm?t=${t}&o=1&p=8&l=as1&asins=${asins}&fc1=${fc1}&IS2=${IS2}&lt1=${lt1}&m=amazon&lc1=${lc1}&bc1=${bc1}&bg1=${bg1}&f=ifr" style="width:120px;height:240px;" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>',
 				'associateTagSuffix' => '-20',
+				'region'             => 'us-east-1',
 			),
 			'UK' => array(
 				'label'              => __( 'United Kingdom', $this->text_domain ),
 				'domain'             => 'Amazon.co.uk',
-				'baseUri'            => 'http://webservices.amazon.co.uk',
-				'linkTemplate'       => '<iframe src="http://rcm-uk.amazon.co.uk/e/cm?t=${t}&o=2&p=8&l=as1&asins=${asins}&fc1=${fc1}&IS2=${IS2}&lt1=${lt1}&m=amazon&lc1=${lc1}&bc1=${bc1}&bg1=${bg1}&f=ifr" style="width:120px;height:240px;" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>',
+				'baseUri'            => 'https://webservices.amazon.co.uk',
+				'linkTemplate'       => '<iframe src="https://rcm-uk.amazon.co.uk/e/cm?t=${t}&o=2&p=8&l=as1&asins=${asins}&fc1=${fc1}&IS2=${IS2}&lt1=${lt1}&m=amazon&lc1=${lc1}&bc1=${bc1}&bg1=${bg1}&f=ifr" style="width:120px;height:240px;" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>',
 				'associateTagSuffix' => '-21',
+				'region'             => 'eu-west-1',
 			),
 			'DE' => array(
 				'label'              => __( 'Deutschland', $this->text_domain ),
 				'domain'             => 'Amazon.de',
-				'baseUri'            => 'http://webservices.amazon.de',
-				'linkTemplate'       => '<iframe src="http://rcm-de.amazon.de/e/cm?t=${t}&o=3&p=8&l=as1&asins=${asins}&fc1=${fc1}&IS2=${IS2}&lt1=${lt1}&m=amazon&lc1=${lc1}&bc1=${bc1}&bg1=${bg1}&f=ifr" style="width:120px;height:240px;" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>',
+				'baseUri'            => 'https://webservices.amazon.de',
+				'linkTemplate'       => '<iframe src="https://rcm-de.amazon.de/e/cm?t=${t}&o=3&p=8&l=as1&asins=${asins}&fc1=${fc1}&IS2=${IS2}&lt1=${lt1}&m=amazon&lc1=${lc1}&bc1=${bc1}&bg1=${bg1}&f=ifr" style="width:120px;height:240px;" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>',
 				'associateTagSuffix' => '04-21',
+				'region'             => 'eu-west-1',
 			),
 			'FR' => array(
 				'label'              => __( 'France', $this->text_domain ),
 				'domain'             => 'Amazon.fr',
-				'baseUri'            => 'http://webservices.amazon.fr',
-				'linkTemplate'       => '<iframe src="http://rcm-fr.amazon.fr/e/cm?t=${t}&o=8&p=8&l=as1&asins=${asins}&fc1=${fc1}&IS2=${IS2}&lt1=${lt1}&m=amazon&lc1=${lc1}&bc1=${bc1}&bg1=${bg1}&f=ifr" style="width:120px;height:240px;" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>',
+				'baseUri'            => 'https://webservices.amazon.fr',
+				'linkTemplate'       => '<iframe src="https://rcm-fr.amazon.fr/e/cm?t=${t}&o=8&p=8&l=as1&asins=${asins}&fc1=${fc1}&IS2=${IS2}&lt1=${lt1}&m=amazon&lc1=${lc1}&bc1=${bc1}&bg1=${bg1}&f=ifr" style="width:120px;height:240px;" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>',
 				'associateTagSuffix' => '09-21',
+				'region'             => 'eu-west-1',
 			),
 			'JP' => array(
 				'label'              => __( 'Japan', $this->text_domain ),
 				'domain'             => 'Amazon.co.jp',
-				'baseUri'            => 'http://webservices.amazon.co.jp',
-				'linkTemplate'       => '<iframe src="http://rcm-jp.amazon.co.jp/e/cm?t=${t}&o=9&p=8&l=as1&asins=${asins}&fc1=${fc1}&IS2=${IS2}&lt1=${lt1}&m=amazon&lc1=${lc1}&bc1=${bc1}&bg1=${bg1}&f=ifr" style="width:120px;height:240px;" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>',
+				'baseUri'            => 'https://webservices.amazon.co.jp',
+				'linkTemplate'       => '<iframe src="https://rcm-jp.amazon.co.jp/e/cm?t=${t}&o=9&p=8&l=as1&asins=${asins}&fc1=${fc1}&IS2=${IS2}&lt1=${lt1}&m=amazon&lc1=${lc1}&bc1=${bc1}&bg1=${bg1}&f=ifr" style="width:120px;height:240px;" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>',
 				'associateTagSuffix' => '-22',
+				'region'             => 'us-west-2',
 			),
 			'CA' => array(
 				'label'              => __( 'Canada', $this->text_domain ),
 				'domain'             => 'Amazon.ca',
-				'baseUri'            => 'http://webservices.amazon.ca',
-				'linkTemplate'       => '<iframe src="http://rcm-ca.amazon.ca/e/cm?t=${t}&o=15&p=8&l=as1&asins=${asins}&fc1=${fc1}&IS2=${IS2}&lt1=${lt1}&m=amazon&lc1=${lc1}&bc1=${bc1}&bg1=${bg1}&f=ifr" style="width:120px;height:240px;" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>',
+				'baseUri'            => 'https://webservices.amazon.ca',
+				'linkTemplate'       => '<iframe src="https://rcm-ca.amazon.ca/e/cm?t=${t}&o=15&p=8&l=as1&asins=${asins}&fc1=${fc1}&IS2=${IS2}&lt1=${lt1}&m=amazon&lc1=${lc1}&bc1=${bc1}&bg1=${bg1}&f=ifr" style="width:120px;height:240px;" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>',
 				'associateTagSuffix' => '0c-20',
+				'region'             => 'us-east-1',
 			),
 			'CN' => array(
 				'label'              => __( 'China', $this->text_domain ),
 				'domain'             => 'Amazon.cn',
-				'baseUri'            => 'http://webservices.amazon.cn',
-				'linkTemplate'       => '<iframe src="http://rcm-cn.amazon.cn/e/cm?t=${t}&o=28&p=8&l=as1&asins=${asins}&fc1=${fc1}&IS2=${IS2}&lt1=${lt1}&m=amazon&lc1=${lc1}&bc1=${bc1}&bg1=${bg1}&f=ifr" style="width:120px;height:240px;" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>',
+				'baseUri'            => 'https://webservices.amazon.cn',
+				'linkTemplate'       => '<iframe src="https://rcm-cn.amazon.cn/e/cm?t=${t}&o=28&p=8&l=as1&asins=${asins}&fc1=${fc1}&IS2=${IS2}&lt1=${lt1}&m=amazon&lc1=${lc1}&bc1=${bc1}&bg1=${bg1}&f=ifr" style="width:120px;height:240px;" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>',
 				'associateTagSuffix' => '-23',
+				'region'             => 'us-west-2',
 			),
 			'IT' => array(
 				'label'              => __( 'Italia', $this->text_domain ),
 				'domain'             => 'Amazon.it',
-				'baseUri'            => 'http://webservices.amazon.it',
-				'linkTemplate'       => '<iframe src="http://rcm-it.amazon.it/e/cm?t=${t}&o=29&p=8&l=as1&asins=${asins}&fc1=${fc1}&IS2=${IS2}&lt1=${lt1}&m=amazon&lc1=${lc1}&bc1=${bc1}&bg1=${bg1}&f=ifr" style="width:120px;height:240px;" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>',
+				'baseUri'            => 'https://webservices.amazon.it',
+				'linkTemplate'       => '<iframe src="https://rcm-it.amazon.it/e/cm?t=${t}&o=29&p=8&l=as1&asins=${asins}&fc1=${fc1}&IS2=${IS2}&lt1=${lt1}&m=amazon&lc1=${lc1}&bc1=${bc1}&bg1=${bg1}&f=ifr" style="width:120px;height:240px;" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>',
 				'associateTagSuffix' => '-21',
+				'region'             => 'eu-west-1',
 			),
 			'ES' => array(
 				'label'              => __( 'España', $this->text_domain ),
 				'domain'             => 'Amazon.es',
-				'baseUri'            => 'http://webservices.amazon.es',
-				'linkTemplate'       => '<iframe src="http://rcm-es.amazon.es/e/cm?t=${t}&o=30&p=8&l=as1&asins=${asins}&fc1=${fc1}&IS2=${IS2}&lt1=${lt1}&m=amazon&lc1=${lc1}&bc1=${bc1}&bg1=${bg1}&f=ifr" style="width:120px;height:240px;" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>',
+				'baseUri'            => 'https://webservices.amazon.es',
+				'linkTemplate'       => '<iframe src="https://rcm-es.amazon.es/e/cm?t=${t}&o=30&p=8&l=as1&asins=${asins}&fc1=${fc1}&IS2=${IS2}&lt1=${lt1}&m=amazon&lc1=${lc1}&bc1=${bc1}&bg1=${bg1}&f=ifr" style="width:120px;height:240px;" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>',
 				'associateTagSuffix' => '-21',
+				'region'             => 'eu-west-1',
 			),
 		);
-	}
-
-	function clean() {
-		$this->delete_settings();
 	}
 
 	function init() {
@@ -139,12 +154,22 @@ class Amazonjs
 			add_action( 'admin_init', array( $this, 'admin_init' ) );
 			add_action( 'plugin_row_meta', array( $this, 'plugin_row_meta' ), 10, 2 );
 		}
-		add_shortcode( 'amazonjs', array( $this, 'shortcode' ) );
 		if ( ! is_admin() ) {
 			add_action( 'wp_enqueue_scripts', array( $this, 'wp_enqueue_styles' ) );
 			add_action( 'wp_enqueue_scripts', array( $this, 'wp_enqueue_scripts' ) );
 			add_action( 'wp_footer', array( $this, 'wp_enqueue_scripts_for_footer' ), 1 );
 		}
+
+		add_shortcode( 'amazonjs', array( $this, 'shortcode' ) );
+	}
+
+	function load_textdomain_mofile( $mofile, $domain ) {
+		if ( $this->text_domain === $domain ) {
+			if ( strpos( $mofile, 'languages/plugins/amazonjs-ja.mo' ) !== false ) {
+				return $this->plugin_dir . '/languages/amazonjs-ja.mo';
+			}
+		}
+		return $mofile;
 	}
 
 	function admin_init() {
@@ -153,6 +178,7 @@ class Amazonjs
 		add_action( 'media_upload_amazonjs_keyword', array( $this, 'media_upload_amazonjs_keyword' ) );
 		add_action( 'media_upload_amazonjs_id', array( $this, 'media_upload_amazonjs_id' ) );
 		add_action( 'wp_ajax_amazonjs_search', array( $this, 'ajax_amazonjs_search' ) );
+		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
 
 		$page = $this->option_page_name;
 		register_setting( $this->option_name, $this->option_name, array( $this, 'validate_settings' ) );
@@ -172,6 +198,42 @@ class Amazonjs
 				array( $key, $field )
 			);
 		}
+
+		$gutenberg = false;
+		if ( version_compare( $GLOBALS['wp_version'], '5.0-beta', '>' ) ) {
+			$gutenberg = true;
+			if ( function_exists( 'use_block_editor_for_post_type' )
+				&& ! use_block_editor_for_post_type( 'post' ) ) {
+				// block editor is disabled
+				$gutenberg = false;
+			}
+		}
+
+		if ( $gutenberg ) {
+			add_filter( 'mce_buttons',  array( $this, 'mce_buttons' ) );
+			add_filter( 'mce_external_plugins', array( $this, 'mce_external_plugins' ) );
+
+			wp_register_script( 'amazonjs_admin', $this->url . '/js/admin.js' );
+			$admin_vars = array(
+				'mce' => array(
+					'buttonTitle' => __( 'Add Amazon Link', $this->text_domain ),
+					'dialogTitle' => __( 'Add Amazon Link', $this->text_domain ),
+					'dialogUrl' => get_bloginfo( 'wpurl' ) . '/wp-admin/media-upload.php?post_id=0&type=amazonjs&tab=amazonjs_keyword'
+				)
+			);
+			wp_localize_script( 'amazonjs_admin', 'amazonjsAdmin', $admin_vars );
+			wp_enqueue_script( 'amazonjs_admin' );
+		}
+	}
+
+	function mce_buttons( $buttons ) {
+		array_push( $buttons, 'amazonjs' );
+		return $buttons;
+	}
+
+	function mce_external_plugins( $plugin_array ) {
+		$plugin_array['amazonjs'] = $this->url .'/js/tinymce-plugin.js';
+		return $plugin_array;
 	}
 
 	function admin_print_styles() {
@@ -319,12 +381,6 @@ class Amazonjs
 				'section'     => 'appearance',
 				'description' => __( "AmazonJS will display customer review by using WordPress's Thickbox.", $this->text_domain ),
 			),
-			'supportDisabledJavascript' => array(
-				'label'       => __( 'Display official widget when disabled javascript in web browser', $this->text_domain ),
-				'type'        => 'checkbox',
-				'section'     => 'appearance',
-				'description' => __( 'If set to true, AmazonJS will output html by using <code>&lt;script type=&quot;text/javascript&quot;&gt;document.write(&quot;{$indicator_html}&quot;)&lt;/script&gt;&lt;noscript&gt;{$link_html}&lt;/noscript&gt;</code>.', $this->text_domain ),
-			),
 			'useAnimation'              => array(
 				'label'   => __( 'Use fadeIn animation', $this->text_domain ),
 				'type'    => 'checkbox',
@@ -335,6 +391,18 @@ class Amazonjs
 				'type'        => 'checkbox',
 				'section'     => 'appearance',
 				'description' => __( 'If set to true, AmazonJS will override the style of the theme by using <code>!important</code> declaration.', $this->text_domain ),
+			),
+			'useShortItemUrl'     => array(
+				'label'       => __( 'Use short item url', $this->text_domain ),
+				'type'        => 'checkbox',
+				'section'     => 'appearance',
+				'description' => __( "AmazonJS will remove a product title from an item url.", $this->text_domain ),
+			),
+			'supportDisabledJavascript' => array(
+				'label'       => __( 'Uf set to true, display an official widget instead javascript code', $this->text_domain ),
+				'type'        => 'checkbox',
+				'section'     => 'appearance',
+				'description' => __( 'If set to true, AmazonJS will output html by using <code>&lt;script type=&quot;text/javascript&quot;&gt;document.write(&quot;{$indicator_html}&quot;)&lt;/script&gt;&lt;noscript&gt;{$link_html}&lt;/noscript&gt;</code>.', $this->text_domain ),
 			),
 			'useTrackEvent'             => array(
 				'label'       => __( 'Click Tracking by using Google Analytics', $this->text_domain ),
@@ -380,6 +448,7 @@ class Amazonjs
 	}
 
 	function validate_settings( $settings ) {
+
 		foreach ( $this->setting_fields as $key => $field ) {
 			if ( 'checkbox' == $field['type'] ) {
 				$settings[ $key ] = ( 'on' == @$settings[ $key ] || '1' == @$settings[ $key ] );
@@ -464,7 +533,7 @@ EOF;
 		}
 		$item = (array_key_exists( $asin, $this->display_items[ $country_code ] ))
 			? $this->display_items[ $country_code ][ $asin ]
-			: $this->display_items[ $country_code ][ $asin ] =  get_site_transient("amazonjs_{$country_code}_{$asin}");
+			: $this->display_items[ $country_code ][ $asin ] =  $this->get_cached_item( $country_code, $asin );
 		$url  = '#';
 		if ( is_array( $item ) && array_key_exists( 'DetailPageURL', $item ) ) {
 			$url = $item['DetailPageURL'];
@@ -485,11 +554,7 @@ EOF;
 EOF;
 	}
 
-	/**
-	 * Gets default country code by get_locale
-	 * @return string
-	 */
-	function default_country_code() {
+	function wp_locale_to_amazon_locale() {
 		switch ( get_locale() ) {
 			case 'en_CA':
 				return 'CA';
@@ -511,9 +576,50 @@ EOF;
 		return 'US';
 	}
 
+	/**
+	 * Gets default country code by get_locale
+	 * @return string
+	 */
+	function default_country_code() {
+		$locale = $this->wp_locale_to_amazon_locale();
+
+		if ( isset( $this->settings[ 'associateTag' . $locale ] ) && ! empty( $this->settings[ 'associateTag' . $locale ] ) ) {
+			return $locale;
+		}
+
+		// search
+		foreach ( $this->countries as $code => $value ) {
+			if ( isset( $this->settings[ 'associateTag' . $code ] ) && ! empty( $this->settings[ 'associateTag' . $code ] ) ) {
+				return $code;
+			}
+		}
+
+		return $locale;
+	}
+
+	function delete_cache() {
+		global $wpdb;
+
+		if ( !empty( $wpdb ) && $wpdb instanceof wpdb ) {
+			$flag = $wpdb->suppress_errors;
+			$wpdb->suppress_errors( true );
+			$result = $wpdb->query("DELETE FROM $wpdb->options WHERE option_name LIKE '\_site\_transient\_%amazonjs\_%'");
+			$wpdb->suppress_errors( $flag );
+			return $result !== false;
+		}
+		return false;
+	}
+
+	function get_cached_item( $country_code, $asin ) {
+		if ( $cached_item = get_site_transient( "amazonjs_{$country_code}_{$asin}" ) ) {
+			return $cached_item;
+		}
+		return null;
+	}
+
 	function get_item( $country_code, $asin ) {
-		if ( $ai = get_site_transient( "amazonjs_{$country_code}_{$asin}" ) ) {
-			return $ai;
+		if ( $cached_item = $this->get_cached_item( $country_code, $asin ) ) {
+			return $cached_item;
 		}
 		$items = $this->fetch_items( $country_code, array( $asin => false ) );
 		return @$items[ $asin ];
@@ -569,6 +675,7 @@ EOF;
 		return $links;
 	}
 
+	/** @noinspection PhpUnused */
 	function add_api_setting_section() {
 		?>
 		<p><?php _e( 'This plugin uses the Amazon Product Advertising API in order to get product infomation. Thus, you must use your Access Key ID &amp; Secret Access Key.', $this->text_domain ); ?></p>
@@ -576,6 +683,7 @@ EOF;
 	<?php
 	}
 
+	/** @noinspection PhpUnused */
 	function add_associate_setting_section() {
 		?>
 		<p><?php _e( 'Amazon has an affiliate program called Amazon Associates. To apply for the Associates Program, visit the <a href="https://affiliate-program.amazon.com/" target="_blank">Amazon Associates website</a> for details.', $this->text_domain ); ?></p>
@@ -583,12 +691,15 @@ EOF;
 	<?php
 	}
 
+	/** @noinspection PhpUnused */
 	function add_appearance_setting_section() {
 	}
 
+	/** @noinspection PhpUnused */
 	function add_analytics_setting_section() {
 	}
 
+	/** @noinspection PhpUnused */
 	function add_customize_setting_section() {
 	}
 
@@ -652,6 +763,43 @@ EOF;
 		}
 	}
 
+	/**
+	 * @return bool
+	 */
+	function is_page_amazonjs_options() {
+		global $pagenow;
+		return ( 'options-general.php' == $pagenow && isset($_GET['page']) && $this->option_page_name == $_GET['page'] );
+	}
+
+	function admin_notices() {
+		// https://wordpress.org/support/topic/how-to-use-settings-api-and-print-custom-validation-errors?replies=3
+		if ( $this->is_page_amazonjs_options() ) {
+
+			if ( (isset($_GET['updated']) && 'true' == $_GET['updated']) || (isset($_GET['settings-updated']) && 'true' == $_GET['settings-updated']) ) {
+				// Validate keys
+				if ( !empty($this->settings['accessKeyId']) && !empty($this->settings['secretAccessKey']) ) {
+					$results = $this->itemsearch( $this->default_country_code(), null, 'WordPress' );
+					if ( is_array( $results ) && isset($results['error_code']) ) {
+						switch ( $results['error_code'] ) {
+							case 'InvalidClientTokenId':
+								add_settings_error( 'general', 'settings_updated', __( 'The Access Key ID may be invalid', $this->text_domain )  . ' (' . $results['error_code'] . ')', 'error' );
+								break;
+							case 'SignatureDoesNotMatch':
+								add_settings_error( 'general', 'settings_updated', __( 'The Secret Access Key may be invalid', $this->text_domain ). ' (' . $results['error_code'] . ')', 'error' );
+								break;
+						}
+					}
+				}
+			}
+
+			if ( isset( $_POST['action'] ) && $_POST['action'] === 'amazonjs_delete_cache' ) {
+				if ( $this->delete_cache() ) {
+					add_settings_error( 'general', 'settings_updated', __( 'The Caches are deleted', $this->text_domain ), 'updated' );
+				}
+			}
+		}
+	}
+
 	function media_buttons() {
 		global $post_ID, $temp_ID;
 		$iframe_ID  = (int) ( 0 == $post_ID ? $temp_ID : $post_ID );
@@ -704,6 +852,11 @@ EOF;
 				<?php do_settings_sections( $this->option_page_name ); ?>
 				<?php submit_button(); ?>
 			</form>
+
+			<form action="<?php echo $_SERVER["REQUEST_URI"] ?>" method="post">
+				<input type="hidden" name="action" value="amazonjs_delete_cache"/>
+				<?php submit_button( __( 'Delete Cache', $this->text_domain ), 'secondary', 'amazonjs_delete_cache' ); ?>
+			</form>
 		</div>
 	<?php
 	}
@@ -716,28 +869,6 @@ EOF;
 			</div>
 		<?php endif ?>
 	<?php
-	}
-
-	// amazon api
-	function itemlookup( $countryCode, $itemId ) {
-		$options              = array();
-		$options['ItemId']    = $itemId;
-		$options['Operation'] = 'ItemLookup';
-		return $this->amazon_get( $countryCode, $options );
-	}
-
-	// amazon api
-	function itemsearch( $countryCode, $searchIndex, $keywords, $itemPage = 0 ) {
-		$options = array();
-		if ( $itemPage > 0 ) {
-			$options['ItemPage'] = $itemPage;
-		}
-		$options['Keywords']  = $keywords;
-		$options['Operation'] = 'ItemSearch';
-		if ( $searchIndex ) {
-			$options['SearchIndex'] = $searchIndex;
-		}
-		return $this->amazon_get( $countryCode, $options );
 	}
 
 	/**
@@ -791,7 +922,79 @@ EOF;
 		}
 	}
 
+	// amazon api
+	function itemlookup( $countryCode, $itemId ) {
+		$options              = array();
+		$options['ItemId']    = $itemId;
+		$options['Operation'] = 'ItemLookup';
+		return $this->amazon_get( $countryCode, $options );
+	}
+
+	// amazon api
+	function itemsearch( $countryCode, $searchIndex, $keywords, $itemPage = 0 ) {
+		$options = array();
+		if ( $itemPage > 0 ) {
+			$options['ItemPage'] = $itemPage;
+		}
+		$options['Keywords']  = $keywords;
+		$options['Operation'] = 'ItemSearch';
+		$options['SearchIndex'] = null;
+		if ( !empty($searchIndex) ) {
+			$options['SearchIndex'] = $searchIndex;
+		}
+		return $this->amazon_get( $countryCode, $options );
+	}
+
 	function amazon_get( $countryCode, $options ) {
+		return $this->amazon_get_v5( $countryCode, $options );
+	}
+
+	function amazon_get_v5( $countryCode, $options ) {
+		try {
+			$baseUri         = $this->countries[ $countryCode ]['baseUri'];
+			$region          = $this->countries[ $countryCode ]['region'];
+			$accessKeyId     = @trim( $this->settings['accessKeyId'] );
+			$secretAccessKey = @trim( $this->settings['secretAccessKey'] );
+			$associateTag    = @$this->settings[ 'associateTag' . $countryCode ];
+
+			// validate request
+			if ( empty( $countryCode ) || ( empty( $options['ItemId'] ) && empty( $options['Keywords'] ) ) || ( empty( $accessKeyId ) || empty( $secretAccessKey ) ) ) {
+				throw new Exception( __( 'Invalid Request Parameters', $this->text_domain ) );
+			}
+
+			$client = new Amazonjs_Amazon_PaApiClientV5( $accessKeyId, $secretAccessKey, $associateTag, $baseUri, $region, $this->text_domain );
+
+			if ( $options['Operation'] == 'ItemLookup' ) {
+				$result = $client->lookup( explode( ',', $options['ItemId'] ) );
+			} else {
+				$result = $client->search( $options['SearchIndex'], $options['Keywords'], $options['ItemPage'] );
+			}
+
+			if ( isset( $result['items'] ) ) {
+				$fetchedAt   = time();
+				$fixed_items = array();
+				foreach ( $result['items'] as $item ) {
+					Amazonjs_Itemfixer::fixed_item( $item );
+					$item['CountryCode'] = $countryCode;
+					$item['UpdatedAt']   = $fetchedAt;
+					$fixed_items[]       = $item;
+				}
+				$result['items'] = $fixed_items;
+			}
+		} catch (Exception $e) {
+			$result = array( 'success' => false, 'message' => $e->getMessage() );
+		}
+
+		if ( self::is_debug() ) {
+			if ( isset( $result ) && ! $result['success'] ) {
+				error_log( var_export( array( 'options' => $options, 'result' => $result ), true ) );
+			}
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function amazon_get_v4( $countryCode, $options ) {
 		$baseUri         = $this->countries[ $countryCode ]['baseUri'];
 		$accessKeyId     = @trim( $this->settings['accessKeyId'] );
 		$secretAccessKey = @trim( $this->settings['secretAccessKey'] );
@@ -851,6 +1054,7 @@ EOF;
 
 		$success = false;
 		/* @var $xml stdClass */
+		/** @noinspection PhpComposerExtensionStubsInspection */
 		$xml = @simplexml_load_string( $body );
 		if ( WP_DEBUG ) {
 			if ( ! $xml ) {
@@ -890,6 +1094,8 @@ EOF;
 					$r['LargeImage']   = self::image_element( $item->LargeImage );
 					$r['CountryCode']  = $countryCode;
 					$r['UpdatedAt']    = $fetchedAt;
+
+					$this->fix_item( $r );
 					$items[]           = $r;
 				}
 				if ( 'ItemLookup' == $operation ) {
@@ -952,8 +1158,45 @@ EOF;
 		return null;
 	}
 
+	/**
+	 * @param array $item
+	 */
+	function fix_item( &$item ) {
+		$item['DetailPageURL'] = self::to_ssl_detail_url( $item['DetailPageURL'] );
+		if ( $this->settings['useShortItemUrl'] ) {
+			$item['DetailPageURL'] = self::trim_title_from_detail_url( $item['DetailPageURL'] );
+		}
+		if ( isset( $item['IFrameReviewURL'] ) ) {
+			$item['IFrameReviewURL'] = self::to_ssl_detail_url( $item['IFrameReviewURL'] );
+		}
+		foreach ( array('SmallImage', 'MediumImage', 'LargeImage') as $imageKey ) {
+			if ( isset( $item[$imageKey] ) ) {
+				$item[$imageKey]['src'] = self::to_ssl_image_url( $item[$imageKey]['src'] );
+			}
+		}
+	}
+
+	static function trim_title_from_detail_url( $url ) {
+		return preg_replace('/(\.amazon\.[^\/]+)\/([^\/]+)\/dp\//', '$1/dp/', $url);
+	}
+
+	static function to_ssl_detail_url( $url ) {
+		return preg_replace('/^http:\/\//', 'https://', $url);
+	}
+
+	static function to_ssl_image_url( $url ) {
+		return preg_replace('/^http:\/\/ecx\./', 'https://images-na.ssl-', $url);
+	}
+
 	static function urlencode_rfc3986( $string ) {
 		return str_replace( '%7E', '~', rawurlencode( $string ) );
+	}
+
+	/**
+	 * @return bool
+	 */
+	static function is_debug() {
+		return defined( 'WP_DEBUG_AMAZONJS' ) && WP_DEBUG_AMAZONJS;
 	}
 }
 
@@ -969,6 +1212,7 @@ function media_upload_type_amazonjs_id() {
 	include dirname( __FILE__ ) . '/media-upload-type-amazonjs.php';
 }
 
+/** @noinspection PhpUnused */
 function amazonjs_init() {
 	global $amazonjs;
 	$amazonjs = new Amazonjs();
@@ -977,11 +1221,14 @@ function amazonjs_init() {
 
 function amazonjs_uninstall() {
 	$amazonjs = new Amazonjs();
-	$amazonjs->clean();
+	$amazonjs->delete_settings();
+	$amazonjs->delete_cache();
 	unset($amazonjs);
 }
 
-add_action( 'init', 'amazonjs_init' );
+if ( function_exists( 'add_action' ) ) {
+	add_action( 'init', 'amazonjs_init' );
+}
 if ( function_exists( 'register_uninstall_hook' ) ) {
 	register_uninstall_hook( __FILE__, 'amazonjs_uninstall' );
 }
