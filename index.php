@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Amazon Block
  * Plugin URI: https://github.com/ryo-utsunomiya/amazon-block
- * Description: A WordPress plugin that provides 'Amazon' block for Gutenberg editor.
- * Version: 0.2.1
+ * Description: A WordPress plugin that provides 'Amazon' block for Block Editor.
+ * Version: 0.3.0
  * Author: Ryo Utsunomiya
  * License: GPLv2
  *

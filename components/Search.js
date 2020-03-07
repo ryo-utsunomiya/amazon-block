@@ -38,12 +38,12 @@ export default class AmazonSearch extends React.Component {
 	}
 
 	handleSearch() {
-		$.get( this.getSearchApiUrl() )
-			.done( res => {
-				const data = JSON.parse( res );
+		window.fetch( this.getSearchApiUrl() )
+			.then( res => res.json() )
+			.then( data => {
 				this.setState( { data } );
 			} )
-			.fail( err => {
+			.catch( err => {
 				// eslint-disable-next-line no-console
 				console.error( err );
 			} );
