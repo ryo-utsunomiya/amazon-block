@@ -2,7 +2,7 @@
 Contributors: ryo511
 Tags: gutenberg, editor
 Requires at least: 4.9
-Tested up to: 4.9
+Tested up to: 5.3
 Requires PHP: 5.6
 Stable tag: trunk
 License: GPLv2 or later
@@ -59,6 +59,10 @@ Yes. If you are using Classic Editor, this plugin falls back to AmazonJS.
 1. Search by Amazon API
 
 == Changelog ==
+
+= 0.3.0 =
+
+* PA-API 5.0
 
 = 0.2.0 =
 
